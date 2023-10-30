@@ -72,18 +72,28 @@ impl Watcher {
             Value::String(player.identity().to_string()),
         );
         if let Some(artists) = metadata.artists() {
-            data.insert("artist".to_string(), Value::String(artists.join(", ")));
+            let artists = artists.join(", ");
+            if !artists.is_empty() {
+                data.insert("artist".to_string(), Value::String(artists));
+            }
         } else if let Some(artists) = metadata.album_artists() {
-            data.insert("artist".to_string(), Value::String(artists.join(", ")));
+            let artists = artists.join(", ");
+            if !artists.is_empty() {
+                data.insert("artist".to_string(), Value::String(artists));
+            }
         }
         if let Some(album) = metadata.album_name() {
-            data.insert("album".to_string(), Value::String(album.to_string()));
+            if !album.is_empty() {
+                data.insert("album".to_string(), Value::String(album.to_string()));
+            }
         }
         if let Some(title) = metadata.title() {
             data.insert("title".to_string(), Value::String(title.to_string()));
         }
-        if let Some(url) = metadata.url() {
-            data.insert("url".to_string(), Value::String(url.to_string()));
+        if let Some(uri) = metadata.url() {
+            if !uri.is_empty() {
+                data.insert("uri".to_string(), Value::String(uri.to_string()));
+            }
         }
 
         Some(data)
