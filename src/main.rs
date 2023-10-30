@@ -5,7 +5,7 @@ use std::{sync::Arc, thread};
 use anyhow::Context;
 use aw_client_rust::{blocking::AwClient, Event as AwEvent};
 use chrono::{Duration, Utc};
-use mpris::PlayerFinder;
+use mpris::{PlaybackStatus, PlayerFinder};
 use serde_json::{Map, Value};
 use std::sync::atomic::{AtomicBool, Ordering};
 
@@ -55,6 +55,11 @@ impl Watcher {
 
     fn get_data(&self) -> Option<Map<String, Value>> {
         let player = self.player_finder.find_active().ok()?;
+
+        if player.get_playback_status().ok()? != PlaybackStatus::Playing {
+            return None;
+        }
+
         let metadata = if let Ok(metadata) = player.get_metadata() {
             Some(metadata)
         } else {
