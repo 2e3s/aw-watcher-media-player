@@ -1,15 +1,15 @@
 #![warn(clippy::pedantic)]
 
-use std::{sync::Arc, thread};
+use std::{sync::Arc, thread, time::Duration};
 
 use anyhow::Context;
 use aw_client_rust::{blocking::AwClient, Event as AwEvent};
-use chrono::{Duration, Utc};
+use chrono::Utc;
 use mpris::{PlaybackStatus, PlayerFinder};
 use serde_json::{Map, Value};
 use std::sync::atomic::{AtomicBool, Ordering};
 
-const POLL_TIME_SECONDS: u16 = 5;
+const POLL_TIME: Duration = Duration::from_secs(5);
 const BUCKET_NAME: &str = env!("CARGO_PKG_NAME");
 
 struct Watcher {
@@ -40,16 +40,12 @@ impl Watcher {
         let event = AwEvent {
             id: None,
             timestamp: Utc::now(),
-            duration: Duration::zero(),
+            duration: chrono::Duration::zero(),
             data,
         };
 
         self.client
-            .heartbeat(
-                &self.bucket_name,
-                &event,
-                f64::from(POLL_TIME_SECONDS) + 1.0,
-            )
+            .heartbeat(&self.bucket_name, &event, POLL_TIME.as_secs_f64() + 1.0)
             .with_context(|| "Failed to send heartbeat for active window")
     }
 
@@ -113,12 +109,15 @@ fn main() -> anyhow::Result<()> {
     signal_hook::flag::register(signal_hook::consts::SIGTERM, Arc::clone(&term))?;
     signal_hook::flag::register(signal_hook::consts::SIGINT, Arc::clone(&term))?;
 
+    let mut start_time = std::time::Instant::now();
     while !term.load(Ordering::Relaxed) {
-        if let Some(data) = watcher.get_data() {
-            watcher.send_active_window(data)?;
+        if start_time.elapsed() >= POLL_TIME {
+            start_time = std::time::Instant::now();
+            if let Some(data) = watcher.get_data() {
+                watcher.send_active_window(data)?;
+            }
         }
-
-        thread::sleep(std::time::Duration::from_secs(POLL_TIME_SECONDS.into()));
+        thread::sleep(std::time::Duration::from_millis(100));
     }
 
     Ok(())
