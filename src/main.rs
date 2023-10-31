@@ -9,6 +9,9 @@ use mpris::{PlaybackStatus, PlayerFinder};
 use serde_json::{Map, Value};
 use std::sync::atomic::{AtomicBool, Ordering};
 
+#[macro_use]
+extern crate log;
+
 const POLL_TIME: Duration = Duration::from_secs(5);
 const BUCKET_NAME: &str = env!("CARGO_PKG_NAME");
 
@@ -35,7 +38,7 @@ impl Watcher {
     }
 
     fn send_active_window(&self, data: Map<String, Value>) -> anyhow::Result<()> {
-        println!("Reporting {data:?}");
+        info!("Reporting {data:?}");
 
         let event = AwEvent {
             id: None,
@@ -59,7 +62,7 @@ impl Watcher {
         let metadata = if let Ok(metadata) = player.get_metadata() {
             Some(metadata)
         } else {
-            println!(
+            warn!(
                 "No correct metadata found for the player {}",
                 player.bus_name()
             );
@@ -102,6 +105,8 @@ impl Watcher {
 }
 
 fn main() -> anyhow::Result<()> {
+    simple_logger::init_with_level(log::Level::Info).unwrap();
+
     let watcher = Watcher::new();
     watcher.init()?;
 
