@@ -8,6 +8,12 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+
+defaults:
+  run:
+    # necessary for Windows
+    shell: bash
+
 jobs:
   fmt:
     runs-on: ubuntu-latest
@@ -17,13 +23,29 @@ jobs:
         with:
           components: rustfmt
       - run: cargo fmt --check --all
+
   clippy:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - TARGET: x86_64-unknown-linux-gnu
+            OS: ubuntu-latest
+          - TARGET: x86_64-pc-windows-msvc
+            OS: windows-latest
+    runs-on: ${{ matrix.OS }}
+    env:
+      TARGET: ${{ matrix.TARGET }}
+      OS: ${{ matrix.OS }}
     steps:
       - uses: actions/checkout@v3
-      - run: sudo apt-get install -y libdbus-1-dev
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy
       - uses: Swatinem/rust-cache@v2
-      - run: cargo clippy --locked --all-targets -- -D warnings
+      - name: Install dependencies
+        run: |
+          if [[ $OS =~ ^ubuntu.*$ ]]; then
+            sudo apt-get install -y libdbus-1-dev
+          fi
+      - name: Install rust target
+        run: rustup target add $TARGET
+      - name: Run build
+        run: cargo clippy --locked --target $TARGET --all -- -D warnings
