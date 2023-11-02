@@ -20,10 +20,5 @@ mpris = "2.0.1"
 [target.'cfg(target_os = "windows")'.dependencies.windows]
 version = "0.51.1"
 features = [
-	"Foundation",
-	"Media",
-	"Win32_Foundation",
-	"Win32_System_WinRT",
 	"Media_Control",
-	"Storage_Streams",
 ]

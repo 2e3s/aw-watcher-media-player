@@ -8,5 +8,5 @@ such as Spotify, browser-based players, and others.
 | Environment   | Support                        |
 | ------------- | -------------------------------|
 | Linux         | :heavy_check_mark: Yes ([MPRIS](https://specifications.freedesktop.org/mpris-spec/latest/)) |
-| Windows       | :hourglass: Not yet            |
+| Windows       | :heavy_check_mark: Yes         |
 | MacOS         | :hourglass: Not yet            |

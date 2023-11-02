@@ -39,13 +39,11 @@ jobs:
       OS: ${{ matrix.OS }}
     steps:
       - uses: actions/checkout@v3
+      - name: Install dependencies for Ubuntu
+        if: ${{ contains(matrix.OS, 'ubuntu') }}
+        run: sudo apt-get install -y libdbus-1-dev
       - uses: Swatinem/rust-cache@v2
-      - name: Install dependencies
-        run: |
-          if [[ $OS =~ ^ubuntu.*$ ]]; then
-            sudo apt-get install -y libdbus-1-dev
-          fi
       - name: Install rust target
         run: rustup target add $TARGET
-      - name: Run build
+      - name: Run clippy
         run: cargo clippy --locked --target $TARGET --all -- -D warnings
