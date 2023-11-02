@@ -29,7 +29,6 @@ jobs:
     runs-on: ${{ matrix.image }}
     env:
       TARGET: ${{ matrix.target }}
-      BUILD_NAME: ${{ matrix.build_name }}
     steps:
       - uses: actions/checkout@v3
       - name: Install dependencies for Ubuntu
@@ -44,16 +43,16 @@ jobs:
       - name: Compress binary
         if: ${{ contains(matrix.image, 'windows') }}
         shell: powershell
-        run: Compress-Archive aw-watcher-media-player.exe aw-watcher-media-player-$BUILD_NAME.zip
+        run: Compress-Archive aw-watcher-media-player.exe aw-watcher-media-player-${{ matrix.build_name }}.zip
         working-directory: target/${{ matrix.target }}/release
 
       - name: Compress binary
         if: ${{ !contains(matrix.image, 'windows') }}
-        run: zip "aw-watcher-media-player-$BUILD_NAME.zip" aw-watcher-media-player
+        run: zip "aw-watcher-media-player-${{ matrix.build_name }}.zip" aw-watcher-media-player
         working-directory: target/${{ matrix.target }}/release
 
       - name: Upload to release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: target/${{ matrix.target }}/release/aw-watcher-media-player-$BUILD_NAME.zip
+          file: target/${{ matrix.target }}/release/aw-watcher-media-player-${{ matrix.build_name }}.zip
