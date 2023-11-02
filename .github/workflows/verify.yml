@@ -29,18 +29,17 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - TARGET: x86_64-unknown-linux-gnu
-            OS: ubuntu-latest
-          - TARGET: x86_64-pc-windows-msvc
-            OS: windows-latest
-    runs-on: ${{ matrix.OS }}
+          - target: x86_64-unknown-linux-gnu
+            image: ubuntu-latest
+          - target: x86_64-pc-windows-msvc
+            image: windows-latest
+    runs-on: ${{ matrix.image }}
     env:
-      TARGET: ${{ matrix.TARGET }}
-      OS: ${{ matrix.OS }}
+      TARGET: ${{ matrix.target }}
     steps:
       - uses: actions/checkout@v3
       - name: Install dependencies for Ubuntu
-        if: ${{ contains(matrix.OS, 'ubuntu') }}
+        if: ${{ contains(matrix.image, 'ubuntu') }}
         run: sudo apt-get install -y libdbus-1-dev
       - uses: Swatinem/rust-cache@v2
       - name: Install rust target

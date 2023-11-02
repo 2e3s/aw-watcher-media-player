@@ -45,15 +45,15 @@ jobs:
         if: ${{ contains(matrix.image, 'windows') }}
         shell: powershell
         run: Compress-Archive aw-watcher-media-player.exe aw-watcher-media-player-$BUILD_NAME.zip
-        working-directory: target/release
+        working-directory: target/${{ matrix.target }}/release
 
       - name: Compress binary
         if: ${{ !contains(matrix.image, 'windows') }}
         run: zip "aw-watcher-media-player-$BUILD_NAME.zip" aw-watcher-media-player
-        working-directory: target/release
+        working-directory: target/${{ matrix.target }}/release
 
       - name: Upload to release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: target/release/aw-watcher-media-player-$BUILD_NAME.zip
+          file: target/${{ matrix.target }}/release/aw-watcher-media-player-$BUILD_NAME.zip
