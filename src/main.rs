@@ -1,10 +1,13 @@
 #![warn(clippy::pedantic)]
 
+mod config;
 mod platform;
 
 use anyhow::Context;
 use aw_client_rust::{blocking::AwClient, Event as AwEvent};
 use chrono::Utc;
+use clap::Parser;
+use config::{Cli, Config};
 use platform::CrossMediaPlayer;
 use serde_json::{Map, Value};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -22,10 +25,10 @@ struct Watcher {
 }
 
 impl Watcher {
-    fn new() -> Self {
+    fn new(config: &Config) -> Self {
         let hostname = gethostname::gethostname().into_string().unwrap();
         Self {
-            client: AwClient::new("localhost", "5600", "aw-watcher-media-player"),
+            client: AwClient::new(&config.host, &config.port.to_string(), BUCKET_NAME),
             bucket_name: format!("{BUCKET_NAME}_{hostname}"),
         }
     }
@@ -53,11 +56,15 @@ impl Watcher {
 }
 
 fn main() -> anyhow::Result<()> {
-    simple_logger::init_with_level(log::Level::Info).unwrap();
+    let cli = Cli::parse();
+    let verbosity = cli.verbosity.log_level().unwrap_or(log::Level::Error);
+    simple_logger::init_with_level(verbosity).unwrap();
+
+    let config = Config::new(cli);
 
     let media_player = platform::MediaPlayer::new();
 
-    let watcher = Watcher::new();
+    let watcher = Watcher::new(&config);
     watcher.init()?;
 
     let term = Arc::new(AtomicBool::new(false));
@@ -66,7 +73,7 @@ fn main() -> anyhow::Result<()> {
 
     let mut start_time = std::time::Instant::now();
     while !term.load(Ordering::Relaxed) {
-        if start_time.elapsed() >= POLL_TIME {
+        if start_time.elapsed() >= config.poll_time {
             start_time = std::time::Instant::now();
             if let Some(data) = media_player.mediadata() {
                 watcher.send_active_window(data.serialize())?;
