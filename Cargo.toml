@@ -17,15 +17,14 @@ toml = "0.8.8"
 clap = { version = "4.4.10", features = ["derive"] }
 serde = { version = "1.0.193", features = ["derive"] }
 clap-verbosity-flag = "2.1.0"
-tokio = { version = "1.34.0", features = ["signal"] }
+tokio = { version = "1.34.0", features = ["time", "macros", "signal"] }
 dirs = "5.0.1"
-ctrlc = { version = "3.4.1", features = ["termination"] }
 
-[target.'cfg(unix)'.dependencies]
+[target.'cfg(all(unix, not(target_os = "macos")))'.dependencies]
 mpris = "2.0.1"
 
 [target.'cfg(target_os = "windows")'.dependencies.windows]
-version = "0.51.1"
+version = "0.52.0"
 features = [
 	"Foundation",
 	"Media_Control",

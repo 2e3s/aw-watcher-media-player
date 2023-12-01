@@ -4,14 +4,14 @@ mod config;
 mod platform;
 
 use anyhow::Context;
-use aw_client_rust::{blocking::AwClient, Event as AwEvent};
+use aw_client_rust::{AwClient, Event as AwEvent};
 use chrono::Utc;
 use clap::Parser;
 use config::{Cli, Config};
 use platform::CrossMediaPlayer;
 use serde_json::{Map, Value};
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::{sync::Arc, thread, time::Duration};
+use std::time::Duration;
+use tokio::{signal, time};
 
 #[macro_use]
 extern crate log;
@@ -33,13 +33,14 @@ impl Watcher {
         }
     }
 
-    fn init(&self) -> anyhow::Result<()> {
+    async fn init(&self) -> anyhow::Result<()> {
         self.client
             .create_bucket_simple(&self.bucket_name, "currently-playing")
+            .await
             .with_context(|| format!("Failed to create bucket {}", self.bucket_name))
     }
 
-    fn send_active_window(&self, data: Map<String, Value>) -> anyhow::Result<()> {
+    async fn send_active_window(&self, data: Map<String, Value>) -> anyhow::Result<()> {
         info!("Reporting {data:?}");
 
         let event = AwEvent {
@@ -51,11 +52,13 @@ impl Watcher {
 
         self.client
             .heartbeat(&self.bucket_name, &event, POLL_TIME.as_secs_f64() + 1.0)
+            .await
             .with_context(|| "Failed to send heartbeat for active window")
     }
 }
 
-fn main() -> anyhow::Result<()> {
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
     let verbosity = cli.verbosity.log_level().unwrap_or(log::Level::Error);
     simple_logger::init_with_level(verbosity).unwrap();
@@ -65,22 +68,45 @@ fn main() -> anyhow::Result<()> {
     let media_player = platform::MediaPlayer::new();
 
     let watcher = Watcher::new(&config);
-    watcher.init()?;
+    watcher.init().await?;
 
-    let term = Arc::new(AtomicBool::new(false));
-    signal_hook::flag::register(signal_hook::consts::SIGTERM, Arc::clone(&term))?;
-    signal_hook::flag::register(signal_hook::consts::SIGINT, Arc::clone(&term))?;
+    let ctrl_c = async {
+        signal::ctrl_c()
+            .await
+            .expect("failed to install Ctrl+C handler");
+    };
 
-    let mut start_time = std::time::Instant::now();
-    while !term.load(Ordering::Relaxed) {
-        if start_time.elapsed() >= config.poll_time {
-            start_time = std::time::Instant::now();
-            if let Some(data) = media_player.mediadata() {
-                watcher.send_active_window(data.serialize())?;
+    #[cfg(unix)]
+    let terminate = async {
+        signal::unix::signal(signal::unix::SignalKind::terminate())
+            .expect("failed to install signal handler")
+            .recv()
+            .await;
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    let mut interval = time::interval(config.poll_interval);
+    let run = async move {
+        loop {
+            interval.tick().await;
+            let data = media_player.mediadata();
+            if let Some(data) = data {
+                watcher.send_active_window(data.serialize()).await.unwrap();
             }
         }
-        thread::sleep(std::time::Duration::from_millis(100));
-    }
+    };
 
-    Ok(())
+    tokio::select! {
+        () = run => { Ok(()) },
+        () = ctrl_c => {
+            info!("Interruption signal received");
+            Ok(())
+        },
+        () = terminate => {
+            info!("Terminate signal received");
+            Ok(())
+        },
+    }
 }
