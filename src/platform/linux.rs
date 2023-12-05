@@ -49,6 +49,15 @@ fn mediadata(player_finder: &PlayerFinder) -> Option<MediaData> {
     let player = player_finder.find_active().ok()?;
 
     if player.get_playback_status().ok()? != PlaybackStatus::Playing {
+        trace!(
+            "Player {} is not playing with status {}",
+            player.bus_name(),
+            player
+                .get_playback_status()
+                .map(|status| format!("{status:?}"))
+                .unwrap_or("not found".to_string())
+        );
+
         return None;
     }
 

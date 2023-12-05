@@ -23,15 +23,12 @@ jobs:
             # 22.04 is the earliest version with OpenSSL 3
             image: ubuntu-22.04
             build_name: linux
-            rustflags:
           - target: x86_64-pc-windows-msvc
             image: windows-latest
             build_name: windows
-            rustflags: -C target-feature=+crt-static
     runs-on: ${{ matrix.image }}
     env:
       TARGET: ${{ matrix.target }}
-      RUSTFLAGS: ${{ matrix.rustflags }}
     steps:
       - uses: actions/checkout@v3
       - name: Install dependencies for Ubuntu
@@ -59,3 +56,15 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: target/${{ matrix.target }}/release/aw-watcher-media-player-${{ matrix.build_name }}.zip
+
+      - run: cargo install cargo-deb
+        if: ${{ contains(matrix.image, 'ubuntu') }}
+      - run: cargo deb
+        if: ${{ contains(matrix.image, 'ubuntu') }}
+      - name: Upload deb to release
+        if: ${{ contains(matrix.image, 'ubuntu') }}
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file_glob: true
+          file: target/debian/aw-*.deb

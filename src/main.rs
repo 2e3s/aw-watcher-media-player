@@ -51,6 +51,8 @@ async fn main() -> anyhow::Result<()> {
             if let Some(data) = data {
                 if config.report_player(&data.player) {
                     watcher.send_active_window(&data).await.unwrap();
+                } else {
+                    trace!("Player \"{}\" is filtered out", data.player);
                 }
             }
         }

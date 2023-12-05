@@ -11,7 +11,10 @@ such as Spotify, Foobar, browser-based players, and others. Most media players a
 | Windows       | :heavy_check_mark: Yes         |
 | MacOS         | :hourglass: Not yet supported  |
 
-Example of report for Spotify in Linux:
+<details open>
+<summary>Examples of reported data</summary>
+
+Spotify in Linux:
 ```json
 {
   "album": "How to Measure a Planet? (Deluxe Edition)",
@@ -29,6 +32,25 @@ Firefox in Linux (no plugins):
     "title": "🇺🇦 🇵🇱 Гей, соколи! / Hej, sokoły! – Ukrainian/Polish folk song"
 }
 ```
+MS Edge in Windows:
+```json
+{
+  "artist": "Bel Canto Choir Vilnius",
+  "player": "MSEdge",
+  "title": "Shchedryk (Carol of the Bells) – Bel Canto Choir Vilnius"
+}
+```
+Default Windows player
+```json
+{
+  "album": "Zemlya",
+  "artist": "Okean Elzy",
+  "player": "Microsoft.ZuneMusic_8wekyb3d8bbwe!Microsoft.ZuneMusic",
+  "title": "Obijmy"
+}
+```
+
+</details>
 
 ## Configuration
 
