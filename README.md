@@ -11,7 +11,7 @@ such as Spotify, Foobar, browser-based players, and others. Most media players a
 | Windows       | :heavy_check_mark: Yes         |
 | MacOS         | :hourglass: Not yet supported  |
 
-<details open>
+<details>
 <summary>Examples of reported data</summary>
 
 Spotify in Linux:
@@ -65,6 +65,9 @@ include_players = ["Spotify", "firefox", "chrom"]
 exclude_players = ["chromium"]
 ```
 Filter options for including and excluding players for reporting look for a case-insensitive substring.
+Use `-vv` to see what's reported.
+
+Note that normally browsers report the currently playing track to the system even in a private mode.
 
 ## Build
 
