@@ -2,60 +2,16 @@
 
 mod config;
 mod platform;
+mod watcher;
 
-use anyhow::Context;
-use aw_client_rust::{AwClient, Event as AwEvent};
-use chrono::Utc;
 use clap::Parser;
 use config::{Cli, Config};
 use platform::CrossMediaPlayer;
-use serde_json::{Map, Value};
-use std::time::Duration;
 use tokio::{signal, time};
+use watcher::Watcher;
 
 #[macro_use]
 extern crate log;
-
-const POLL_TIME: Duration = Duration::from_secs(5);
-const BUCKET_NAME: &str = env!("CARGO_PKG_NAME");
-
-struct Watcher {
-    client: AwClient,
-    bucket_name: String,
-}
-
-impl Watcher {
-    fn new(config: &Config) -> Self {
-        let hostname = gethostname::gethostname().into_string().unwrap();
-        Self {
-            client: AwClient::new(&config.host, &config.port.to_string(), BUCKET_NAME),
-            bucket_name: format!("{BUCKET_NAME}_{hostname}"),
-        }
-    }
-
-    async fn init(&self) -> anyhow::Result<()> {
-        self.client
-            .create_bucket_simple(&self.bucket_name, "currently-playing")
-            .await
-            .with_context(|| format!("Failed to create bucket {}", self.bucket_name))
-    }
-
-    async fn send_active_window(&self, data: Map<String, Value>) -> anyhow::Result<()> {
-        info!("Reporting {data:?}");
-
-        let event = AwEvent {
-            id: None,
-            timestamp: Utc::now(),
-            duration: chrono::Duration::zero(),
-            data,
-        };
-
-        self.client
-            .heartbeat(&self.bucket_name, &event, POLL_TIME.as_secs_f64() + 1.0)
-            .await
-            .with_context(|| "Failed to send heartbeat for active window")
-    }
-}
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -93,7 +49,9 @@ async fn main() -> anyhow::Result<()> {
             interval.tick().await;
             let data = media_player.mediadata();
             if let Some(data) = data {
-                watcher.send_active_window(data.serialize()).await.unwrap();
+                if config.report_player(&data.player) {
+                    watcher.send_active_window(&data).await.unwrap();
+                }
             }
         }
     };

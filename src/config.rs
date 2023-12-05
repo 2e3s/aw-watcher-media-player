@@ -1,6 +1,7 @@
 use std::{
     path::{Path, PathBuf},
     time::Duration,
+    vec,
 };
 
 use clap::Parser;
@@ -20,7 +21,7 @@ fn default_poll_time() -> u64 {
 }
 
 #[derive(Parser, Debug)]
-#[clap(author, version, about, long_about = None)]
+#[clap(author, version, about = "Watcher to report the currently playing media to ActivityWatch.", long_about = None)]
 pub struct Cli {
     #[arg(short, long, value_name = "FILE")]
     config: Option<PathBuf>,
@@ -40,14 +41,16 @@ pub struct Cli {
     #[clap(long)]
     poll_interval: Option<u64>,
 
-    /// Comma-separated list of players to report to ActivityWatch.
+    /// Comma-separated case-insensitive list of players to report to ActivityWatch.
+    /// If specified, the player name should contain the filter as a substring to be reported.
     /// Data from all players is reported if not specified.
-    #[clap(long, value_name = "PLAYERS", use_value_delimiter = true, hide = true)]
-    include_players: Option<String>,
+    #[clap(long, value_name = "PLAYERS", use_value_delimiter = true)]
+    include_players: Vec<String>,
 
-    /// Comma-separated list of players to not report to ActivityWatch.
-    #[clap(long, value_name = "PLAYERS", use_value_delimiter = true, hide = true)]
-    exclude_players: Option<String>,
+    /// Comma-separated case-insensitive list of players to not report to ActivityWatch.
+    /// If specified, the player name should not contain the filter as a substring to be reported.
+    #[clap(long, value_name = "PLAYERS", use_value_delimiter = true)]
+    exclude_players: Vec<String>,
 
     #[command(flatten)]
     pub verbosity: Verbosity,
@@ -61,8 +64,10 @@ struct Toml {
     host: String,
     #[serde(default = "default_poll_time")]
     poll_time: u64,
-    include: Option<String>,
-    exclude: Option<String>,
+    #[serde(default = "Vec::new")]
+    include_players: Vec<String>,
+    #[serde(default = "Vec::new")]
+    exclude_players: Vec<String>,
 }
 
 impl Toml {
@@ -98,8 +103,8 @@ pub struct Config {
     pub host: String,
     pub port: u16,
     pub poll_interval: Duration,
-    _include_players: Option<String>,
-    _exclude_players: Option<String>,
+    pub include_players: Vec<String>,
+    pub exclude_players: Vec<String>,
 }
 
 impl Config {
@@ -107,14 +112,43 @@ impl Config {
         let _config_content = std::fs::read_to_string("config.toml").unwrap_or_default();
         let toml_data: Toml = Toml::new(cli.config.as_deref());
 
-        trace!("Config: {:?}", toml_data);
+        trace!("TOML config: {:?}", toml_data);
+        trace!("CLI config: {:?}", cli);
+
+        let mut include_players = vec![];
+        include_players.extend(cli.include_players.iter().map(|s| s.to_lowercase()));
+        include_players.extend(toml_data.include_players.iter().map(|s| s.to_lowercase()));
+
+        let mut exclude_players = vec![];
+        exclude_players.extend(cli.exclude_players.iter().map(|s| s.to_lowercase()));
+        exclude_players.extend(toml_data.exclude_players.iter().map(|s| s.to_lowercase()));
 
         Config {
             host: cli.host.unwrap_or(toml_data.host),
             port: cli.port.unwrap_or(toml_data.port),
             poll_interval: Duration::from_secs(cli.poll_interval.unwrap_or(toml_data.poll_time)),
-            _include_players: cli.include_players.or(toml_data.include),
-            _exclude_players: cli.exclude_players.or(toml_data.exclude),
+            include_players,
+            exclude_players,
         }
+    }
+
+    pub fn report_player(&self, player: &str) -> bool {
+        if !self.include_players.is_empty() {
+            for filter in &self.include_players {
+                if player.to_lowercase().contains(filter) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        if !self.exclude_players.is_empty() {
+            for filter in &self.exclude_players {
+                if player.to_lowercase().contains(filter) {
+                    return false;
+                }
+            }
+        }
+
+        true
     }
 }

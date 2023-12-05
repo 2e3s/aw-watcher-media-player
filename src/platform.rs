@@ -21,7 +21,7 @@ pub struct MediaData {
     album: Option<String>,
     title: Option<String>,
     uri: Option<String>,
-    player: String,
+    pub player: String,
 }
 
 impl MediaData {

@@ -1,8 +1,9 @@
 [package]
 name = "aw-watcher-media-player"
-version = "0.0.1"
+authors = ["Demmie <2e3s19@gmail.com>"]
+version = "1.0.0"
 edition = "2021"
-description = "A cross-platform watcher to send currently playing data to ActivityWatch."
+description = "A cross-platform watcher to send currently playing media to ActivityWatch."
 
 [dependencies]
 aw-client-rust = { git = "https://github.com/ActivityWatch/aw-server-rust", rev = "448312d" }

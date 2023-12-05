@@ -23,12 +23,15 @@ jobs:
             # 22.04 is the earliest version with OpenSSL 3
             image: ubuntu-22.04
             build_name: linux
+            rustflags:
           - target: x86_64-pc-windows-msvc
             image: windows-latest
             build_name: windows
+            rustflags: -C target-feature=+crt-static
     runs-on: ${{ matrix.image }}
     env:
       TARGET: ${{ matrix.target }}
+      RUSTFLAGS: ${{ matrix.rustflags }}
     steps:
       - uses: actions/checkout@v3
       - name: Install dependencies for Ubuntu

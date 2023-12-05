@@ -65,8 +65,8 @@ fn mediadata(player_finder: &PlayerFinder) -> Option<MediaData> {
     Some(MediaData {
         player: player.identity().to_string(),
         album: metadata.album_name().map(std::string::ToString::to_string),
-        title: metadata.album_name().map(std::string::ToString::to_string),
-        uri: metadata.album_name().map(std::string::ToString::to_string),
+        title: metadata.title().map(std::string::ToString::to_string),
+        uri: metadata.url().map(std::string::ToString::to_string),
         artists: if let Some(artists) = metadata.artists() {
             Some(
                 artists
