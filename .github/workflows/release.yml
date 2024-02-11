@@ -14,25 +14,14 @@ defaults:
     shell: bash
   
 jobs:
-  build:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - target: x86_64-unknown-linux-gnu
-            # 22.04 is the earliest version with OpenSSL 3
-            image: ubuntu-22.04
-            build_name: linux
-          - target: x86_64-pc-windows-msvc
-            image: windows-latest
-            build_name: windows
-    runs-on: ${{ matrix.image }}
+  build-ubuntu:
+    # 22.04 is the earliest version with OpenSSL 3
+    runs-on: ubuntu-22.04
     env:
-      TARGET: ${{ matrix.target }}
+      TARGET: x86_64-unknown-linux-gnu
     steps:
       - uses: actions/checkout@v3
       - name: Install dependencies for Ubuntu
-        if: ${{ contains(matrix.image, 'ubuntu') }}
         run: sudo apt-get install -y curl build-essential libdbus-1-dev libssl-dev pkg-config
 
       - uses: Swatinem/rust-cache@v2
@@ -41,30 +30,66 @@ jobs:
       - run: cargo build --release --target $TARGET
 
       - name: Compress binary
-        if: ${{ contains(matrix.image, 'windows') }}
-        shell: powershell
-        run: Compress-Archive aw-watcher-media-player.exe aw-watcher-media-player-${{ matrix.build_name }}.zip
-        working-directory: target/${{ matrix.target }}/release
-
-      - name: Compress binary
-        if: ${{ !contains(matrix.image, 'windows') }}
-        run: zip "aw-watcher-media-player-${{ matrix.build_name }}.zip" aw-watcher-media-player
-        working-directory: target/${{ matrix.target }}/release
+        run: zip "aw-watcher-media-player-linux.zip" aw-watcher-media-player
+        working-directory: target/${{ env.TARGET }}/release
 
       - name: Upload to release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: target/${{ matrix.target }}/release/aw-watcher-media-player-${{ matrix.build_name }}.zip
+          file: target/${{ env.TARGET }}/release/aw-watcher-media-player-linux.zip
 
       - run: cargo install cargo-deb
-        if: ${{ contains(matrix.image, 'ubuntu') }}
       - run: cargo deb
-        if: ${{ contains(matrix.image, 'ubuntu') }}
       - name: Upload deb to release
-        if: ${{ contains(matrix.image, 'ubuntu') }}
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file_glob: true
           file: target/debian/aw-*.deb
+
+  build-windows:
+    runs-on: windows-latest
+    env:
+      TARGET: x86_64-pc-windows-msvc
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: Swatinem/rust-cache@v2
+      - name: Install rust target
+        run: rustup target add $TARGET
+      - run: cargo build --release --target $TARGET
+
+      - name: Install NSIS
+        run: choco install nsis
+
+      - name: Setup EnVar Plugin
+        shell: powershell
+        run: |
+          $url = "https://github.com/GsNSIS/EnVar/releases/download/v0.3.1/EnVar-Plugin.zip"
+          $output = "${{ runner.temp }}\EnVar_plugin.zip"
+          $nsisDir = "C:\Program Files (x86)\NSIS"
+          Invoke-WebRequest -Uri $url -OutFile $output
+          Expand-Archive -Path $output -DestinationPath $nsisDir
+          Get-ChildItem "C:\Program Files (x86)\NSIS\Plugins"
+
+      - name: Create installer
+        run: makensis windows.nsi
+
+      - name: Upload installer to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file_glob: true
+          file: "*.exe"
+
+      - name: Compress binary
+        shell: powershell
+        run: Compress-Archive aw-watcher-media-player.exe aw-watcher-media-player-windows.zip
+        working-directory: target/${{ env.TARGET }}/release
+
+      - name: Upload binary to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: target/${{ env.TARGET }}/release/aw-watcher-media-player-windows.zip

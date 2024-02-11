@@ -54,12 +54,16 @@ Default Windows player
 
 ## Installation
 
-- **Linux**: Run `sudo unzip aw-watcher-media-player-linux.zip -d /usr/local/bin` in the console to allow ActivityWatch to detect its presence,
-  or install the attached _.deb_ file.
+- **Linux**:
+  - Run `sudo unzip aw-watcher-media-player-linux.zip -d /usr/local/bin` in the console to allow ActivityWatch to detect its presence.
+  - Or install the attached _.deb_ file.
 
-  **Windows**: unpack the executable from `aw-watcher-media-player-windows.zip` into any new folder,
-  right-click on "Start" -> "System" -> "Advanced system settings" - "Advanced" tab -> "Environment Variables..." -> upper "Edit...", add the new folder path.
-- Optionally, add `aw-watcher-media-player-nux` to autostart at `aw-qt/aw-qt.toml` in [config directory](https://docs.activitywatch.net/en/latest/directories.html#config).
+  **Windows**:
+  - Run the attached installer executable.
+  - To install manually and make it available for ActivityWatch,
+    unpack the executable from `aw-watcher-media-player-windows.zip` into any new folder,
+    right-click on "Start" -> "System" -> "Advanced system settings" - "Advanced" tab -> "Environment Variables..." -> upper "Edit...", add the new folder path.
+- Optionally, add `aw-watcher-media-player` to autostart at `aw-qt/aw-qt.toml` in [config directory](https://docs.activitywatch.net/en/latest/directories.html#config).
 
 ## Configuration
 
