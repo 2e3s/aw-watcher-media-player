@@ -37,3 +37,9 @@ features = [
 
 [package.metadata.deb]
 extended-description = "ActivityWatch must be available by the given address for this watcher to work."
+
+assets = [
+    ["target/release/aw-watcher-media-player", "usr/bin/", "755"],
+    ["README.md", "usr/share/doc/aw-watcher-media-player/README", "644"],
+	["visualization/index.html", "usr/share/aw-watcher-media-player/visualization/index.html", "644"],
+]

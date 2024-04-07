@@ -33,6 +33,9 @@ jobs:
         run: zip "aw-watcher-media-player-linux.zip" aw-watcher-media-player
         working-directory: target/${{ env.TARGET }}/release
 
+      - name: Add visualization
+        run: zip -r "target/${{ env.TARGET }}/release/aw-watcher-media-player-linux.zip" visualization
+
       - name: Upload to release
         uses: svenstaro/upload-release-action@v2
         with:

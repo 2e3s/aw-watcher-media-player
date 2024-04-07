@@ -55,7 +55,8 @@ Default Windows player
 ## Installation
 
 - **Linux**:
-  - Run `sudo unzip aw-watcher-media-player-linux.zip -d /usr/local/bin` in the console to allow ActivityWatch to detect its presence.
+  - Run `sudo unzip -j aw-watcher-media-player-linux.zip aw-watcher-media-player-linux -d /usr/local/bin` in the console to allow ActivityWatch to detect its presence.
+    - Optionally, to use visualizations, run `sudo unzip -d /usr/local/share/aw-watcher-media-player/visualization aw-watcher-media-player-linux.zip 'visualization/*'`.
   - Or install the attached _.deb_ file.
 
   **Windows**:
@@ -81,6 +82,27 @@ Filter options for including and excluding players for reporting look for a case
 Use `-vv` to see what's reported.
 
 Note that normally browsers report the currently playing track to the system even in a private mode.
+
+## Custom Visualization
+
+![custom_visualization](images/aw-vizualization-example.png)
+
+This watcher has a visualization which attempts to do its best to display the sorted list of artists with the overall play time for each artist.
+Note that ActiveWatch UI gives no abilities for the widget to control its sizing, so it may appear smaller than builtin visualizations.
+
+1. Add the following section to your `aw-server.toml` file in [config directory](https://docs.activitywatch.net/en/latest/directories.html#config):
+    ```toml
+    [server.custom_static]
+    aw-watcher-media-player = "/path/to/aw-watcher-media-player/visualization"
+    # aw-watcher-media-player = "C:\Users\<USER>\AppData\Local\aw-watcher-media-player\visualization"
+    ```
+2. Restart ActivityWatch
+3. Add custom visualizations from the Activity Watch GUI: `Activity > Edit View > Add Visualization > Custom Visualization`
+4. Enter `aw-watcher-media-player` for the watcher name.
+
+The visualization is not customizable from ActivityWatch UI. In order to change, the output, open "index.html":
+- Find `getAggregation` function and change `event.data.artist` to `event.data.player` to aggregate by players.
+- Change `MAX_AGGREGATIONS` to determine the maximum number of entries (default is 50).
 
 ## Build
 

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>aw-watcher-media-player</title>
+</head>
+
+<body>
+    <div id="summary">Loading...</div>
+</body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+<script>
+    // A small hack to make the aw-client work in the browser without webpack
+    const exports = {};
+    function require(name) {
+        if (name === 'axios') {
+            return axios;
+        }
+        throw new Error(`Cannot find module '${name}'`);
+    }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/aw-client@0.3.4/out/aw-client.min.js"></script>
+<script defer>
+    const urlParams = new URLSearchParams(window.location.search);
+    const start = urlParams.get('start');
+    const end = urlParams.get('end');
+    const hostname = urlParams.get('hostname');
+
+    const client = new AWClient('aw-watcher-media-player', { baseURL: window.location.origin });
+
+    function getAggregation(event) {
+        return event.data.artist;
+    }
+    const MAX_AGGREGATIONS = 50;
+
+    function formatDuration(duration) {
+        const hours = Math.floor(duration / 3600);
+        const remainingSeconds = duration % 3600;
+        const minutes = Math.floor(remainingSeconds / 60);
+        const seconds = remainingSeconds % 60;
+
+        let formattedTime = '';
+        if (hours > 0) {
+            formattedTime += `${hours}h `;
+        }
+        if (minutes > 0) {
+            formattedTime += `${minutes}m `;
+        }
+        formattedTime += `${seconds}s`;
+
+        return formattedTime;
+    }
+
+    function displayAggregatedDurationChart(aggregatedDurations) {
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+
+        svg.setAttribute("width", "100%");
+        svg.setAttribute("height", aggregatedDurations.length * 51);
+
+        let y = 0;
+
+        const maxDuration = Math.max(...aggregatedDurations.map(({ duration }) => duration));
+
+        aggregatedDurations.forEach(({ aggregation, duration }, index) => {
+            const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+            rect.setAttribute("x", "0");
+            rect.setAttribute("y", y);
+            rect.setAttribute("rx", "5");
+            rect.setAttribute("ry", "5");
+
+            // Set the width of the duration rectangle based on the maximum duration
+            rect.setAttribute("width", `${(duration / maxDuration) * 100}%`);
+
+            rect.setAttribute("height", "46");
+            rect.style.fill = index % 2 === 0 ? 'rgb(204, 204, 204)' : 'rgb(0, 255, 0)';
+            svg.appendChild(rect);
+
+            const textName = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            textName.setAttribute("x", "5");
+            textName.setAttribute("y", y + 19.6);
+            textName.setAttribute("font-family", "sans-serif");
+            textName.setAttribute("font-size", "14px");
+            textName.setAttribute("fill", "#333");
+            textName.textContent = aggregation;
+            svg.appendChild(textName);
+
+            const textDuration = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            textDuration.setAttribute("x", "5");
+            textDuration.setAttribute("y", y + 36.4);
+            textDuration.setAttribute("font-family", "sans-serif");
+            textDuration.setAttribute("font-size", "11px");
+            textDuration.setAttribute("fill", "#444");
+            textDuration.textContent = formatDuration(duration);
+            svg.appendChild(textDuration);
+
+            y += 51;
+        });
+
+        document.getElementById('summary').innerHTML = '';
+        document.getElementById('summary').appendChild(svg);
+    }
+
+    client.query([`${start}/${end}`], [`RETURN = limit_events(query_bucket("aw-watcher-media-player_${hostname}"), 10);`])
+        .then((awData) => {
+            const aggregatedDurationObject = awData[0]
+                .reduce((acc, event) => {
+                    const aggregation = getAggregation(event);
+                    const duration = event.duration;
+                    acc[aggregation] = (acc[aggregation] || 0) + duration;
+
+                    return acc;
+                }, {})
+            const aggregatedDurationArray = Object.entries(aggregatedDurationObject)
+                .sort((a, b) => b[1] - a[1])
+                .map(([aggregation, duration]) => ({ aggregation, duration: Math.round(duration) }));
+
+            aggregatedDurationArray.splice(MAX_AGGREGATIONS);
+
+            displayAggregatedDurationChart(aggregatedDurationArray);
+        })
+        .catch((error) => {
+            console.error('Error fetching data:', error);
+        });
+</script>
+
+</html>
