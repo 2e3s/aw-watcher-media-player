@@ -88,7 +88,7 @@ jobs:
 
       - name: Compress files
         shell: powershell
-        run: Compress-Archive -Path aw-watcher-media-player.exe, ../../visualization -DestinationPath aw-watcher-media-player-windows.zip
+        run: Compress-Archive -Path aw-watcher-media-player.exe, ..\..\..\visualization -DestinationPath aw-watcher-media-player-windows.zip
         working-directory: target/${{ env.TARGET }}/release
 
       - name: Upload binary to release
