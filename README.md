@@ -69,6 +69,7 @@ Default Windows player
 ## Configuration
 
 Configuration file `aw-watcher-media-player.toml` is located in [user's local configuration directory](https://docs.rs/dirs/latest/dirs/fn.config_local_dir.html).
+It's created on the first run, or it may be created manually before running the binary.
 CLI arguments override the file configuration.
 Example:
 ```toml
@@ -81,7 +82,7 @@ exclude_players = ["chromium"]
 Filter options for including and excluding players for reporting look for a case-insensitive substring.
 Use `-vv` to see what's reported.
 
-Note that normally browsers report the currently playing track to the system even in a private mode.
+**Note that normally browsers report the currently playing media to the system even in a private mode/tab/window.**
 
 ## Custom Visualization
 
