@@ -91,7 +91,7 @@ Use `-vv` to see what's reported.
 This watcher has a visualization which attempts to do its best to display the sorted list of artists with the overall play time for each artist.
 Note that ActiveWatch UI gives no abilities for the widget to control its sizing, so it may appear smaller than builtin visualizations.
 
-1. Add the following section to your aw-server/aw-server.toml or aw-server-rust/config.toml file in [config directory](https://docs.activitywatch.net/en/latest/directories.html#config):
+1. Add the following section to your `aw-server/aw-server.toml` or `aw-server-rust/config.toml` file in [config directory](https://docs.activitywatch.net/en/latest/directories.html#config):
     ```toml
     [server.custom_static]
     aw-watcher-media-player = "/path/to/aw-watcher-media-player/visualization"
