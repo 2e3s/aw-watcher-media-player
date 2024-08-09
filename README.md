@@ -99,6 +99,14 @@ Note that ActiveWatch UI gives no abilities for the widget to control its sizing
     # aw-watcher-media-player = "/usr/local/share/aw-watcher-media-player/visualization" # Linux installation from archive
     # aw-watcher-media-player = "C:\Users\<USER>\AppData\Local\aw-watcher-media-player\visualization" # Windows installer
     ```
+  Or add the following section to you `config.toml` file in [config directory](https://docs.activitywatch.net/en/latest/directories.html#config) if you are using [aw-server-rust](https://github.com/ActivityWatch/aw-server-rust):
+  ```toml
+  [custom_static]
+  aw-watcher-media-player = "/path/to/aw-watcher-media-player/visualization"
+  # aw-watcher-media-player = "/usr/share/aw-watcher-media-player/visualization" # .deb installation
+  # aw-watcher-media-player = "/usr/local/share/aw-watcher-media-player/visualization" # Linux installation from archive
+  # aw-watcher-media-player = "C:\\Users\\<USER>\\AppData\\Local\\aw-watcher-media-player\\visualization" # Windows installer
+  ```
 2. Restart ActivityWatch
 3. Add custom visualizations from the Activity Watch GUI: `Activity > Edit View > Add Visualization > Custom Visualization`
 4. Enter `aw-watcher-media-player` for the watcher name.
