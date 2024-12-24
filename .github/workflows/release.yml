@@ -58,7 +58,7 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file_glob: true
-          file: target/debian/aw-*.rpm
+          file: target/generate-rpm/aw-*.rpm
 
   build-windows:
     runs-on: windows-latest
