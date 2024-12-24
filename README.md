@@ -57,7 +57,7 @@ Default Windows player
 - **Linux**:
   - Run `sudo unzip -j aw-watcher-media-player-linux.zip aw-watcher-media-player-linux -d /usr/local/bin` in the console to allow ActivityWatch to detect its presence.
     - Optionally, to use visualizations, run `sudo unzip -d /usr/local/share/aw-watcher-media-player/visualization aw-watcher-media-player-linux.zip 'visualization/*'`.
-  - Or install the attached _.deb_ file.
+  - Or install the attached _.deb_ or _.rpm_ file.
 
   **Windows**:
   - Run the attached installer executable.
@@ -95,7 +95,7 @@ Note that ActiveWatch UI gives no abilities for the widget to control its sizing
     ```toml
     [server.custom_static]
     aw-watcher-media-player = "/path/to/aw-watcher-media-player/visualization"
-    # aw-watcher-media-player = "/usr/share/aw-watcher-media-player/visualization" # .deb installation
+    # aw-watcher-media-player = "/usr/share/aw-watcher-media-player/visualization" # .deb or .rpm installation
     # aw-watcher-media-player = "/usr/local/share/aw-watcher-media-player/visualization" # Linux installation from archive
     # aw-watcher-media-player = 'C:\Users\<USER>\AppData\Local\aw-watcher-media-player\visualization' # Windows installer
     ```

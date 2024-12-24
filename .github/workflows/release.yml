@@ -51,6 +51,15 @@ jobs:
           file_glob: true
           file: target/debian/aw-*.deb
 
+      - run: cargo install cargo-generate-rpm
+      - run: cargo generate-rpm
+      - name: Upload RPM to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file_glob: true
+          file: target/debian/aw-*.rpm
+
   build-windows:
     runs-on: windows-latest
     env:

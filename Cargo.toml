@@ -4,7 +4,7 @@ authors = ["Demmie <2e3s19@gmail.com>"]
 version = "1.1.0"
 edition = "2021"
 description = "A cross-platform watcher to report currently playing media to ActivityWatch."
-license-file = "LICENSE"
+license = "Mozilla Public License 2.0"
 
 [dependencies]
 aw-client-rust = { git = "https://github.com/ActivityWatch/aw-server-rust", rev = "448312d" }
@@ -42,4 +42,10 @@ assets = [
     ["target/release/aw-watcher-media-player", "usr/bin/", "755"],
     ["README.md", "usr/share/doc/aw-watcher-media-player/README", "644"],
 	["visualization/index.html", "usr/share/aw-watcher-media-player/visualization/index.html", "644"],
+]
+
+[package.metadata.generate-rpm]
+assets = [
+    { source = "target/release/aw-watcher-media-player", dest = "/usr/bin/", mode = "755" },
+	{ source = "visualization/index.html", dest = "/usr/share/aw-watcher-media-player/visualization/index.html", mode = "644" },
 ]
