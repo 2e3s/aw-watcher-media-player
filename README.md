@@ -109,9 +109,9 @@ Note that ActiveWatch UI gives no abilities for the widget to control its sizing
       # aw-watcher-media-player = "/usr/local/share/aw-watcher-media-player/visualization" # Linux installation from archive
       # aw-watcher-media-player = 'C:\Users\<USER>\AppData\Local\aw-watcher-media-player\visualization' # Windows installer
       ```
-3. Restart ActivityWatch
-4. Add custom visualizations from the Activity Watch GUI: `Activity > Edit View > Add Visualization > Custom Visualization`
-5. Enter `aw-watcher-media-player` for the watcher name.
+2. Restart ActivityWatch
+3. Add custom visualizations from the Activity Watch GUI: `Activity > Edit View > Add Visualization > Custom Visualization`
+4. Enter `aw-watcher-media-player` for the watcher name.
 
 The visualization is not customizable from ActivityWatch UI. In order to change, the output, open `index.html`:
 - Find `getAggregation` function and change `event.data.artist` to `event.data.player` to aggregate by players.
