@@ -37,6 +37,7 @@ impl CrossMediaPlayer for MediaPlayer {
             album,
             title,
             uri: None,
+            duration_s: None,
             player,
         })
     }

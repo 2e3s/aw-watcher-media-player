@@ -1,7 +1,7 @@
 # Media Player watcher
 
 This watcher sends information the media which is playing now to [ActivityWatch](https://activitywatch.net/).
-It supports any player which can report its status to the system 
+It supports any player which can report its status to the system
 and be controllable by tray or standard multimedia keys,
 such as Spotify, Foobar, browser-based players, and others. Most media players are supported.
 
@@ -21,7 +21,8 @@ Spotify in Linux:
   "artist": "The Gathering",
   "player": "Spotify",
   "title": "My Electricity",
-  "uri": "https://open.spotify.com/track/1cSWc2kX4z39L5uFdGcjFP"
+  "uri": "https://open.spotify.com/track/1cSWc2kX4z39L5uFdGcjFP",
+  "duration_s": 212
 }
 ```
 Firefox in Linux (no plugins):
@@ -29,7 +30,8 @@ Firefox in Linux (no plugins):
 {
     "artist": "Eileen",
     "player": "Mozilla Firefox",
-    "title": "🇺🇦 🇵🇱 Гей, соколи! / Hej, sokoły! – Ukrainian/Polish folk song"
+    "title": "🇺🇦 🇵🇱 Гей, соколи! / Hej, sokoły! – Ukrainian/Polish folk song",
+    "duration_s": 184
 }
 ```
 MS Edge in Windows:
