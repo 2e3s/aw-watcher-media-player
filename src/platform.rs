@@ -8,6 +8,11 @@ mod windows;
 #[cfg(target_os = "windows")]
 pub use windows::MediaPlayer;
 
+#[cfg(target_os = "macos")]
+mod macos;
+#[cfg(target_os = "macos")]
+pub use macos::MediaPlayer;
+
 use serde_json::{Map, Value};
 
 pub trait CrossMediaPlayer {
@@ -16,6 +21,7 @@ pub trait CrossMediaPlayer {
     fn mediadata(&self) -> Option<MediaData>;
 }
 
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct MediaData {
     artists: Option<Vec<String>>,
     album: Option<String>,
@@ -28,7 +34,7 @@ impl MediaData {
     pub fn serialize(&self) -> Map<String, Value> {
         let mut data = Map::new();
 
-        data.insert("player".to_string(), Value::String(self.player.to_string()));
+        data.insert("player".to_string(), Value::String(self.player.clone()));
         if let Some(artists) = &self.artists {
             let artists = artists.join(", ");
             if !artists.is_empty() {
@@ -37,15 +43,15 @@ impl MediaData {
         }
         if let Some(album) = &self.album {
             if !album.is_empty() {
-                data.insert("album".to_string(), Value::String(album.to_string()));
+                data.insert("album".to_string(), Value::String(album.clone()));
             }
         }
         if let Some(title) = &self.title {
-            data.insert("title".to_string(), Value::String(title.to_string()));
+            data.insert("title".to_string(), Value::String(title.clone()));
         }
         if let Some(uri) = &self.uri {
             if !uri.is_empty() {
-                data.insert("uri".to_string(), Value::String(uri.to_string()));
+                data.insert("uri".to_string(), Value::String(uri.clone()));
             }
         }
 

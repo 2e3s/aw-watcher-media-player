@@ -9,7 +9,7 @@ such as Spotify, Foobar, browser-based players, and others. Most media players a
 | ------------- | -------------------------------|
 | Linux         | :heavy_check_mark: Yes ([MPRIS](https://specifications.freedesktop.org/mpris-spec/latest/)) |
 | Windows       | :heavy_check_mark: Yes         |
-| MacOS         | :hourglass: Not yet supported  |
+| MacOS         | :heavy_check_mark: Yes (requires [`media-control`](https://github.com/ungive/media-control)) |
 
 <details>
 <summary>Examples of reported data</summary>
@@ -65,12 +65,24 @@ Default Windows player
   - To install manually and make it available for ActivityWatch,
     unpack the executable from `aw-watcher-media-player-windows.zip` into any new folder,
     right-click on "Start" -> "System" -> "Advanced system settings" - "Advanced" tab -> "Environment Variables..." -> upper "Edit...", add the new folder path.
+- **MacOS**:
+  - Install [`media-control`](https://github.com/ungive/media-control): `brew install media-control`.
+  - If `media-control` is not available in the runtime `PATH`, set `AW_WATCHER_MEDIA_CONTROL_PATH=/absolute/path/to/media-control`.
+  - The watcher prefers `media-control stream --no-diff --debounce=200` and automatically falls back to older command variants when needed.
 - Optionally, add `aw-watcher-media-player` to autostart at `aw-qt/aw-qt.toml` in [config directory](https://docs.activitywatch.net/en/latest/directories.html#config).
 
 ## Configuration
 
-Configuration file `aw-watcher-media-player.toml` is located in [user's local configuration directory](https://docs.rs/dirs/latest/dirs/fn.config_local_dir.html).
-It's created on the first run, or it may be created manually before running the binary.
+Configuration file `aw-watcher-media-player.toml` is located under [user's local configuration directory](https://docs.rs/dirs/latest/dirs/fn.config_local_dir.html).
+By default, the watcher looks for:
+
+- `<config_local_dir>/activitywatch/aw-watcher-media-player/aw-watcher-media-player.toml`
+
+Legacy fallback path:
+
+- `<config_local_dir>/aw-watcher-media-player.toml` (deprecated; a warning is logged and automatic migration is not performed)
+
+The config file may be created manually before running the binary.
 CLI arguments override the file configuration.
 Example:
 ```toml
@@ -82,6 +94,27 @@ exclude_players = ["chromium"]
 ```
 Filter options for including and excluding players for reporting look for a case-insensitive substring.
 Use `-vv` to see what's reported.
+On MacOS, you can set `AW_WATCHER_MEDIA_CONTROL_PATH` to the `media-control` binary if it is not discoverable in `PATH`.
+On MacOS, you can set `AW_WATCHER_MEDIA_CONTROL_DEBOUNCE_MS` to change stream debounce (defaults to `200`).
+
+### Troubleshooting (MacOS stream fallback)
+
+Run with `-vv` and check for these exact log message bodies:
+
+- Preferred profile selected:
+  - `Started media-control stream using /opt/homebrew/bin/media-control stream --no-diff --debounce=200`
+- Fallback to no-debounce profile selected:
+  - `Started media-control stream using /opt/homebrew/bin/media-control stream --no-diff`
+- Fallback to legacy profile selected:
+  - `Started media-control stream using /opt/homebrew/bin/media-control stream`
+- All profiles failed for a candidate:
+  - `Failed to start media-control stream: ... exited before startup with status ...`
+- Binary not found:
+  - `Unable to find media-control executable. Install it with \`brew install media-control\` or set AW_WATCHER_MEDIA_CONTROL_PATH`
+
+Notes:
+- The binary path may differ (`/usr/local/bin/media-control` or `media-control` from `PATH`).
+- The debounce value in the first line reflects `AW_WATCHER_MEDIA_CONTROL_DEBOUNCE_MS` if set.
 
 **Note that normally browsers report the currently playing media to the system even in a private mode/tab/window.**
 

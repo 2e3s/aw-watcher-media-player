@@ -1,4 +1,5 @@
 use std::{
+    fs,
     path::{Path, PathBuf},
     time::Duration,
     vec,
@@ -70,31 +71,93 @@ struct Toml {
     exclude_players: Vec<String>,
 }
 
+struct DefaultConfigPaths {
+    activitywatch_file: PathBuf,
+    legacy_file: PathBuf,
+}
+
+impl DefaultConfigPaths {
+    fn new(config_dir: &Path) -> Self {
+        let config_file_name = format!("{}.toml", env!("CARGO_PKG_NAME"));
+        let activitywatch_file = config_dir
+            .join("activitywatch")
+            .join(env!("CARGO_PKG_NAME"))
+            .join(&config_file_name);
+        let legacy_file = config_dir.join(config_file_name);
+
+        Self {
+            activitywatch_file,
+            legacy_file,
+        }
+    }
+}
+
 impl Toml {
     pub fn new(file: Option<&Path>) -> Self {
-        let file = if let Some(file) = file {
-            file.to_path_buf()
-        } else {
-            let Some(config_dir) = dirs::config_local_dir() else {
-                warn!("Impossible to find config directory, using default config");
-                return Toml::default();
-            };
-            config_dir.join(env!("CARGO_PKG_NAME").to_string() + ".toml")
+        if let Some(file) = file {
+            return Self::read_from_file(file);
+        }
+
+        let Some(config_dir) = dirs::config_local_dir() else {
+            warn!("Impossible to find config directory, using default config");
+            return Toml::default();
         };
 
-        let content = std::fs::read_to_string(&file).unwrap_or_default();
-        if let Ok(config) = toml::from_str(&content) {
-            config
-        } else {
-            if file.exists() {
+        let paths = DefaultConfigPaths::new(&config_dir);
+        if paths.activitywatch_file.exists() {
+            if paths.legacy_file.exists() {
                 warn!(
-                    "Failed to parse config file {}, using defauls",
-                    file.display()
+                    "Found deprecated legacy config path {}. It is ignored because canonical config path {} exists.",
+                    paths.legacy_file.display(),
+                    paths.activitywatch_file.display(),
                 );
-            } else {
-                error!("Impossible to create an empty config");
             }
-            Toml::default()
+            return Self::read_from_file(&paths.activitywatch_file);
+        }
+
+        if paths.legacy_file.exists() {
+            warn!(
+                "Using deprecated legacy config path {}. Please move it to {}. Automatic migration is not performed.",
+                paths.legacy_file.display(),
+                paths.activitywatch_file.display(),
+            );
+            return Self::read_from_file(&paths.legacy_file);
+        }
+
+        Self::read_from_file(&paths.activitywatch_file)
+    }
+
+    fn read_from_file(file: &Path) -> Self {
+        if !file.exists() {
+            trace!(
+                "Config file {} does not exist, using defaults",
+                file.display()
+            );
+            return Toml::default();
+        }
+
+        let content = match fs::read_to_string(file) {
+            Ok(content) => content,
+            Err(error) => {
+                warn!(
+                    "Failed to read config file {} ({}), using defaults",
+                    file.display(),
+                    error
+                );
+                return Toml::default();
+            }
+        };
+
+        match toml::from_str(&content) {
+            Ok(config) => config,
+            Err(error) => {
+                warn!(
+                    "Failed to parse config file {} ({}), using defaults",
+                    file.display(),
+                    error
+                );
+                Toml::default()
+            }
         }
     }
 }
@@ -109,7 +172,6 @@ pub struct Config {
 
 impl Config {
     pub fn new(cli: Cli) -> Self {
-        let _config_content = std::fs::read_to_string("config.toml").unwrap_or_default();
         let toml_data: Toml = Toml::new(cli.config.as_deref());
 
         trace!("TOML config: {:?}", toml_data);
@@ -150,5 +212,24 @@ impl Config {
         }
 
         true
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::DefaultConfigPaths;
+    use std::path::Path;
+
+    #[test]
+    fn computes_activitywatch_and_legacy_paths() {
+        let base = Path::new("/tmp/config-base");
+        let paths = DefaultConfigPaths::new(base);
+        assert_eq!(
+            paths.activitywatch_file,
+            base.join("activitywatch")
+                .join("aw-watcher-media-player")
+                .join("aw-watcher-media-player.toml")
+        );
+        assert_eq!(paths.legacy_file, base.join("aw-watcher-media-player.toml"));
     }
 }
