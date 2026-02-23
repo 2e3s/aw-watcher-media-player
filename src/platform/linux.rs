@@ -91,5 +91,6 @@ fn mediadata(player_finder: &PlayerFinder) -> Option<MediaData> {
                     .collect()
             })
         },
+        duration_s: metadata.length().map(|d| d.as_secs() as i64),
     })
 }
