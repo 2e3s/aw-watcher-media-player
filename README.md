@@ -77,6 +77,7 @@ Spotify in MacOS:
   **MacOS**:
   - To install manually and make it available for ActivityWatch,
     run `unzip -j aw-watcher-media-player-macos-aarch64.zip aw-watcher-media-player -d /usr/local/bin` in the console.
+    You may need to run `sudo xattr -d com.apple.quarantine /usr/local/bin/aw-watcher-media-player`.
 - Optionally, add `aw-watcher-media-player` to autostart at `aw-qt/aw-qt.toml` in [config directory](https://docs.activitywatch.net/en/latest/directories.html#config).
 
 ## Configuration
