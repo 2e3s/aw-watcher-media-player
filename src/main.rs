@@ -43,23 +43,31 @@ async fn main() -> anyhow::Result<()> {
     #[cfg(not(unix))]
     let terminate = std::future::pending::<()>();
 
-    let mut interval = time::interval(config.poll_interval);
     let run = async move {
+        let mut interval = time::interval(config.poll_interval);
+        let mut failed_attempts = 0;
         loop {
-            interval.tick().await;
+            if !tick(failed_attempts, &mut interval).await {
+                return Err(anyhow::anyhow!("Maximum failed attempts reached"));
+            }
             let data = media_player.mediadata();
             if let Some(data) = data {
                 if config.report_player(&data.player) {
-                    watcher.send_active_window(&data).await.unwrap();
+                    if let Err(e) = watcher.send_data(&data).await {
+                        error!("Failed to send data to the server: {}", e);
+                        failed_attempts += 1;
+                        continue;
+                    }
                 } else {
                     trace!("Player \"{}\" is filtered out", data.player);
                 }
             }
+            failed_attempts = 0;
         }
     };
 
     tokio::select! {
-        () = run => { Ok(()) },
+        result = run => result,
         () = ctrl_c => {
             info!("Interruption signal received");
             Ok(())
@@ -69,4 +77,24 @@ async fn main() -> anyhow::Result<()> {
             Ok(())
         },
     }
+}
+
+async fn tick(failed_attempts: u32, interval: &mut time::Interval) -> bool {
+    interval.tick().await;
+
+    if failed_attempts == 0 {
+        return true;
+    }
+    if failed_attempts > 100 {
+        return false;
+    }
+
+    let backoff = interval.period() * failed_attempts.min(10);
+    warn!(
+        "Backing off for {:?} ({} failed attempts)",
+        backoff, failed_attempts
+    );
+    time::sleep(backoff).await;
+
+    true
 }

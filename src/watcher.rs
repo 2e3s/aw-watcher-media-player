@@ -49,7 +49,7 @@ impl Watcher {
         }
     }
 
-    pub async fn send_active_window(&self, data: &MediaData) -> anyhow::Result<()> {
+    pub async fn send_data(&self, data: &MediaData) -> anyhow::Result<()> {
         let data = data.serialize();
         info!("Reporting {data:?}");
 
@@ -67,6 +67,6 @@ impl Watcher {
                 self.poll_interval.as_secs_f64() + 1.0,
             )
             .await
-            .with_context(|| "Failed to send heartbeat for active window")
+            .map_err(anyhow::Error::from)
     }
 }
