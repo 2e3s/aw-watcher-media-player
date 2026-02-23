@@ -9,7 +9,7 @@ such as Spotify, Foobar, browser-based players, and others. Most media players a
 | ------------- | -------------------------------|
 | Linux         | :heavy_check_mark: Yes ([MPRIS](https://specifications.freedesktop.org/mpris-spec/latest/)) |
 | Windows       | :heavy_check_mark: Yes         |
-| MacOS         | :hourglass: Not yet supported  |
+| MacOS         | :heavy_check_mark: Yes         |
 
 <details>
 <summary>Examples of reported data</summary>
@@ -49,7 +49,15 @@ Default Windows player
   "title": "Obijmy"
 }
 ```
-
+Spotify in MacOS:
+```json
+{
+  "album": "This Is the Sound",
+  "artist": "Cellar Darling",
+  "player": "Spotify.app",
+  "title": "Fire, Wind & Earth"
+}
+```
 </details>
 
 ## Installation
@@ -57,7 +65,7 @@ Default Windows player
 - **Linux**:
   - Install the attached _.deb_ or _.rpm_ file from the [latest release](https://github.com/2e3s/aw-watcher-media-player/releases/latest).
   - To install manually and make it available for ActivityWatch,
-    run `sudo unzip -j aw-watcher-media-player-linux.zip aw-watcher-media-player-linux -d /usr/local/bin` in the console.
+    run `sudo unzip -j aw-watcher-media-player-linux.zip aw-watcher-media-player -d /usr/local/bin` in the console.
     - Optionally, to use visualizations, run `sudo unzip -d /usr/local/share/aw-watcher-media-player/visualization aw-watcher-media-player-linux.zip 'visualization/*'`.
 
   **Windows**:
@@ -65,6 +73,10 @@ Default Windows player
   - To install manually and make it available for ActivityWatch,
     unpack the executable from `aw-watcher-media-player-windows.zip` into any new folder,
     right-click on "Start" -> "System" -> "Advanced system settings" - "Advanced" tab -> "Environment Variables..." -> upper "Edit...", add the new folder path.
+
+  **MacOS**:
+  - To install manually and make it available for ActivityWatch,
+    run `unzip -j aw-watcher-media-player-macos-aarch64.zip aw-watcher-media-player -d /usr/local/bin` in the console.
 - Optionally, add `aw-watcher-media-player` to autostart at `aw-qt/aw-qt.toml` in [config directory](https://docs.activitywatch.net/en/latest/directories.html#config).
 
 ## Configuration

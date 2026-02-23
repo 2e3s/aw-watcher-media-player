@@ -105,3 +105,25 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: target/${{ env.TARGET }}/release/aw-watcher-media-player-windows.zip
+
+  build-macos:
+    runs-on: macos-latest
+    env:
+      TARGET: aarch64-apple-darwin
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: Swatinem/rust-cache@v2
+      - name: Install rust target
+        run: rustup target add $TARGET
+      - run: cargo build --release --target $TARGET
+
+      - name: Compress binary
+        run: zip "aw-watcher-media-player-macos-aarch64.zip" aw-watcher-media-player
+        working-directory: target/${{ env.TARGET }}/release
+
+      - name: Upload to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: target/${{ env.TARGET }}/release/aw-watcher-media-player-macos-aarch64.zip
