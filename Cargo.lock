@@ -237,6 +237,7 @@ dependencies = [
  "signal-hook",
  "simple_logger",
  "static_vcruntime",
+ "tempfile",
  "tokio",
  "toml",
  "windows",
@@ -2392,9 +2393,9 @@ dependencies = [
 
 [[package]]
 name = "tempfile"
-version = "3.25.0"
+version = "3.27.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0136791f7c95b1f6dd99f9cc786b91bb81c3800b639b3478e561ddb7be95e5f1"
+checksum = "32497e9a4c7b38532efcdebeef879707aa9f794296a4f0244f6f69e9bc8574bd"
 dependencies = [
  "fastrand",
  "getrandom 0.4.1",

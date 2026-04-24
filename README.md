@@ -82,7 +82,7 @@ Spotify in MacOS:
 
 ## Configuration
 
-Configuration file `aw-watcher-media-player.toml` is located in [user's local configuration directory](https://docs.rs/dirs/latest/dirs/fn.config_local_dir.html).
+Configuration file is located at [config_dir](https://docs.rs/dirs/latest/dirs/fn.config_local_dir.html)`/aw-watcher-media-player/aw-watcher-media-player.toml`.
 It's created on the first run, or it may be created manually before running the binary.
 CLI arguments override the file configuration.
 Example:
