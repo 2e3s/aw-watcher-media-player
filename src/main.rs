@@ -13,7 +13,7 @@ use watcher::Watcher;
 #[macro_use]
 extern crate log;
 
-#[tokio::main]
+#[tokio::main(flavor = "current_thread")]
 async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
     let verbosity = cli.verbosity.log_level().unwrap_or(log::Level::Error);
