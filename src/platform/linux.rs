@@ -54,8 +54,7 @@ fn mediadata(player_finder: &PlayerFinder) -> Option<MediaData> {
             player.bus_name(),
             player
                 .get_playback_status()
-                .map(|status| format!("{status:?}"))
-                .unwrap_or("not found".to_string())
+                .map_or("not found".to_string(), |status| format!("{status:?}"))
         );
 
         return None;
