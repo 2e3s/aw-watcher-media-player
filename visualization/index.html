@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>aw-watcher-media-player</title>
@@ -30,7 +31,7 @@
     const client = new AWClient('aw-watcher-media-player', { baseURL: window.location.origin });
 
     function getAggregation(event) {
-        return event.data.artist;
+        return event.data.artist || event.data.title || event.data.player || "Unknown Media";
     }
     const MAX_AGGREGATIONS = 50;
 
@@ -101,7 +102,8 @@
         document.getElementById('summary').appendChild(svg);
     }
 
-    client.query([`${start}/${end}`], [`RETURN = limit_events(query_bucket("aw-watcher-media-player_${hostname}"), 10);`])
+    // client.query([`${start}/${end}`], [`RETURN = limit_events(query_bucket("aw-watcher-media-player_${hostname}"), 10);`])
+    client.query([`${start}/${end}`], [`RETURN = query_bucket("aw-watcher-media-player_${hostname}");`])
         .then((awData) => {
             const aggregatedDurationObject = awData[0]
                 .reduce((acc, event) => {
