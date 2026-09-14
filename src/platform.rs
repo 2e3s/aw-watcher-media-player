@@ -26,6 +26,7 @@ pub struct MediaData {
     album: Option<String>,
     title: Option<String>,
     uri: Option<String>,
+    duration_s: Option<i64>,
     pub player: String,
 }
 
@@ -52,6 +53,9 @@ impl MediaData {
             if !uri.is_empty() {
                 data.insert("uri".to_string(), Value::String(uri.clone()));
             }
+        }
+        if let Some(duration_s) = &self.duration_s {
+            data.insert("duration_s".to_string(), Value::from(*duration_s));
         }
 
         data
